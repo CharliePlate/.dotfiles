@@ -1,0 +1,11 @@
+profile=$1
+
+if [ "$profile" = "w" ]; then
+    profile="work"
+elif [ "$profile" = "p" ]; then
+    profile="personal"
+else
+    profile="default"
+fi
+
+librewolf -P $profile -no-remote
