@@ -6,8 +6,8 @@ return {
     opts = {
       styles = {
         bold = true,
-        italic = true,
-        transparency = true,
+        italic = false,
+        -- transparency = true,
       },
     },
     init = function()

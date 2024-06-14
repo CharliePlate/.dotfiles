@@ -1,3 +1,5 @@
+local fn = require("util.fn")
+
 return {
   { "numToStr/Comment.nvim", opts = {} },
   {
@@ -44,6 +46,98 @@ return {
     },
   },
   {
+    "CopilotC-Nvim/CopilotChat.nvim",
+
+    branch = "canary",
+    dependencies = {
+      { "zbirenbaum/copilot.lua" }, -- or github/copilot.vim
+      { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
+    },
+    opts = function()
+      local user = vim.env.USER or "User"
+      return {
+        model = "gpt-4",
+        auto_insert_mode = true,
+        show_help = true,
+        question_header = "  " .. user .. " ",
+        answer_header = "  Copilot ",
+        window = {
+          width = 0.4,
+        },
+        selection = function(source)
+          local select = require("CopilotChat.select")
+          return select.visual(source) or select.buffer(source)
+        end,
+      }
+    end,
+    config = function(_, opts)
+      local chat = require("CopilotChat")
+      local ns = vim.api.nvim_create_namespace("copilot-chat-text-hl")
+
+      vim.api.nvim_create_autocmd("BufEnter", {
+        pattern = "copilot-chat",
+        callback = function(ev)
+          vim.opt_local.relativenumber = false
+          vim.opt_local.number = false
+        end,
+      })
+
+      chat.setup(opts)
+    end,
+    keys = {
+      {
+        "<leader>cpc",
+        function()
+          return require("CopilotChat").toggle()
+        end,
+        desc = "Toggle (CopilotChat)",
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>cpx",
+        function()
+          return require("CopilotChat").reset()
+        end,
+        desc = "Clear (CopilotChat)",
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>cpq",
+        function()
+          local input = vim.fn.input("Quick Chat: ")
+          if input ~= "" then
+            require("CopilotChat").ask(input)
+          end
+        end,
+        desc = "Quick Chat (CopilotChat)",
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>cpd",
+        function()
+          local actions = require("CopilotChat.actions")
+          local help = actions.help_actions()
+          if not help then
+            require("noice.source.notify").notify("No help actions found", "error")
+            return
+          end
+          require("CopilotChat.integrations.telescope").pick(help)
+        end,
+        desc = "Diagnostic Help (CopilotChat)",
+        mode = { "n", "v" },
+      },
+      {
+        "<leader>cpp",
+        function()
+          local actions = require("CopilotChat.actions")
+          require("CopilotChat.integrations.telescope").pick(actions.prompt_actions())
+        end,
+        desc = "Prompt Actions (CopilotChat)",
+        mode = { "n", "v" },
+      },
+    },
+  },
+  {
     "L3MON4D3/LuaSnip",
     dependencies = {
       "rafamadriz/friendly-snippets",
@@ -79,7 +173,7 @@ return {
       "saadparwaiz1/cmp_luasnip",
     },
     event = { "InsertEnter", "CmdLineEnter" },
-    opts = function()
+    opts = function(_, opts)
       local cmp = require("cmp")
       return {
         snippet = {
@@ -91,12 +185,12 @@ return {
           completion = cmp.config.window.bordered(),
           documentation = cmp.config.window.bordered(),
         },
-        sources = cmp.config.sources({
+        sources = cmp.config.sources(fn.mergeArrays(opts.sources or {}, {
           { name = "nvim_lsp", priority = 1000 },
           { name = "luasnip", priority = 750 },
           { name = "path", priority = 500 },
           { name = "buffer", priority = 250 },
-        }),
+        })),
         mapping = cmp.mapping.preset.insert({
           ["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
           ["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
@@ -158,13 +252,35 @@ return {
   {
     "folke/trouble.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {},
+    opts = {
+      focus = true,
+    },
     keys = {
-      { "<leader>xx", "<cmd>TroubleToggle<cr>", desc = "Trouble Toggle" },
-      { "<leader>xw", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Trouble Workspace" },
-      { "<leader>xd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Trouble Document" },
-      { "<leader>xl", "<cmd>TroubleToggle loclist<cr>", desc = "Trouble Loclist" },
-      { "<leader>xq", "<cmd>TroubleToggle quickfix<cr>", desc = "Trouble Quickfix" },
+      {
+        "<leader>xx",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xX",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>cs",
+        "<cmd>Trouble symbols toggle window.size.width=30 window.pos=right<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>xL",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "<leader>xQ",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
     },
   },
 }

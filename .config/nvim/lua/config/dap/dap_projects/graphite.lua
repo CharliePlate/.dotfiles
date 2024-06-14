@@ -31,7 +31,7 @@ for name, port in pairs(ports) do
     sourceMaps = true,
     protocol = "inspector",
     console = "integratedTerminal",
-    resolveSourceMapLocations = { "${workspaceFolder}/dist/**/*.js" },
+    outFiles = { "${workspaceFolder}/dist/**/*.js" },
     webRoot = "${workspaceFolder}/src",
     remoteRoot = "${workspaceFolder}/src",
   })

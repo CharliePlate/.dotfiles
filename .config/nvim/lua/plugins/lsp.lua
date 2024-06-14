@@ -25,12 +25,19 @@ return {
         return ret
       end
 
+      local signs = { text = {} }
       for name, icon in pairs(require("util.icons").diagnostics) do
-        name = "DiagnosticSign" .. name
-        vim.fn.sign_define(name, { text = icon, texthl = name, numhl = "" })
+        signs.text[vim.diagnostic.severity[name:upper()]] = icon
       end
 
-      fn.lspOnAttach(function(client, buffer)
+      vim.diagnostic.config({
+        signs = signs,
+        virtual_text = true,
+        underline = true,
+        update_in_insert = false,
+      })
+
+      fn.lspOnAttach(function(client, _)
         if opts.inlayHints[client.name] then
           if client.supports_method("textDocument/inlayHint") then
             vim.lsp.inlay_hint.enable(true)

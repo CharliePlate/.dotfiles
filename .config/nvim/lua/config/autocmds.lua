@@ -63,15 +63,6 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufNewFile", "BufWritePre", "BufWrite
   end,
 })
 
--- return last position when opening a file
-vim.api.nvim_create_autocmd({ "BufReadPost" }, {
-  pattern = { "*" },
-  group = group,
-  callback = function()
-    vim.api.nvim_exec('silent! normal! g`"zv', false)
-  end,
-})
-
 -- highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = group,

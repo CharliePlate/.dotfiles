@@ -15,9 +15,9 @@ return Lang.makeSpec({
         event = { "BufRead Cargo.toml" },
         opts = function()
           return {
-            src = {
-              cmp = { enabled = true },
-            },
+            -- src = {
+            --   cmp = { enabled = true },
+            -- },
             popup = {
               border = "rounded",
             },
